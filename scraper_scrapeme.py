@@ -4,6 +4,7 @@ Extracts product titles and prices across all pages.
 """
 
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup as bs4
 import time
 import random
@@ -15,70 +16,90 @@ def scrapeme(baseURL):
     # Create a session (faster and more consistent requests)
     session = requests.Session()
 
-    # Add headers to look like a real browser
+    # Define headers to mimic a real browser
     headers = {
-        "User-Agent": "Mozilla/5.0"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/91.0.4472.124 Safari/537.36"
     }
+
+    # Attach headers
     session.headers.update(headers)
 
-    response = session.get(baseURL)
-    print("Status:", response.status_code)
+    try:
+        response = session.get(baseURL, timeout=10)
+        response.raise_for_status()
+        print(f"Response Status Code: {response.status_code}")
 
-    # Get HTML and parse it
-    html = response.text
-    soup = bs4(html, "lxml")
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching the page: {e}")
+        return []
 
-    # Find pagination numbers (1,2,3,...)
-    pagination_numbers = soup.find("ul", class_="page-numbers").find_all("li")
+    # Parse HTML
+    soup = bs4(response.text, "lxml")
 
-    # Extract only numeric page values
+    # Get pagination
+    pagination = soup.find("ul", class_="page-numbers")
+    pagination_numbers = pagination.find_all("li") if pagination else []
+
     list_of_numbers = []
     for number in pagination_numbers:
-        number = number.text.strip()
-        if number.isdigit():
-            list_of_numbers.append(int(number))
+        text = number.text.strip()
+        if text.isdigit():
+            list_of_numbers.append(int(text))
 
-    # Get the maximum page number
-    max_page_number = max(list_of_numbers)
+    max_page_number = max(list_of_numbers) if list_of_numbers else 1
     print(f"Max page number: {max_page_number}")
 
-    # Loop through all pages
+    products_info = []
+
+    # Loop pages
     for page_number in range(1, max_page_number + 1):
-        print(f"Scraping page {page_number}...")
+        print(f"\nScraping page {page_number}...")
 
-        # Build correct URL for each page
-        if page_number == 1:
-            url = baseURL
-        else:
-            url = f"{baseURL}page/{page_number}/"
+        url = baseURL if page_number == 1 else f"{baseURL}page/{page_number}/"
 
-        # Send request
-        response = session.get(url)
-        print("Status:", response.status_code)
+        try:
+            response = session.get(url, timeout=10)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Error on page {page_number}: {e}")
+            continue
 
-        html = response.text
-        soup = bs4(html, "lxml")
+        soup = bs4(response.text, "lxml")
 
-        # Delay to avoid overwhelming server
         time.sleep(random.uniform(0.5, 2.0))
 
-        # Find all products
         products = soup.find_all("li", class_="product")
 
-        # Extract product info
         for product in products:
-            # Get title safely
             titleTag = product.find("h2", class_="woocommerce-loop-product__title")
-            title = titleTag.text if titleTag else "No title found"
-
-            # Get price safely
             priceTag = product.find("span", class_="woocommerce-Price-amount")
-            price = priceTag.text if priceTag else "No price found"
 
-            # Print result
+            title = titleTag.text.strip() if titleTag else "No title"
+            price = priceTag.text.strip() if priceTag else "No price"
+
+            data = {
+                "Title": title,
+                "Price": price
+            }
+
+            products_info.append(data)
+
             print(f"Title: {title}, Price: {price}")
 
+    print(f"\nTotal products scraped: {len(products_info)}")
+    return products_info
 
-# Run the function
+
+# Entry point
 if __name__ == "__main__":
-    scrapeme(baseURL)
+    data = scrapeme(baseURL)
+
+    # Convert to DataFrame
+    df = pd.DataFrame(data)
+
+    # Save CSV
+    df.to_csv("products_info.csv", index=False, encoding='utf-8-sig')
+
+    print("\nCSV saved successfully!")

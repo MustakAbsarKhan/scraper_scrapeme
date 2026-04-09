@@ -75,18 +75,24 @@ def scrapeme(baseURL):
         for product in products:
             titleTag = product.find("h2", class_="woocommerce-loop-product__title")
             priceTag = product.find("span", class_="woocommerce-Price-amount")
+            imageTag = product.find("img", class_="attachment-woocommerce_thumbnail")
+            urlTag = product.find("a", class_ = "woocommerce-LoopProduct-link")
 
             title = titleTag.text.strip() if titleTag else "No title"
             price = priceTag.text.strip() if priceTag else "No price"
+            image = imageTag.get("src") if imageTag else "No image"
+            url = urlTag.get("href") if urlTag else "No URL"
 
             data = {
                 "Title": title,
-                "Price": price
+                "Price": price,
+                "Image URL": image,
+                "Product URL": url
             }
 
             products_info.append(data)
 
-            print(f"Title: {title}, Price: {price}")
+            print(f"Title: {title}, Price: {price}, Image URL: {image}, Product URL: {url}")
 
     print(f"\nTotal products scraped: {len(products_info)}")
     return products_info

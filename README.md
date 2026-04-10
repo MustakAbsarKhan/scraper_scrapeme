@@ -2,30 +2,34 @@
 
 # 🛒 Scrapeme Web Scraper
 
-### ⚡ Production-Ready Python Scraper with Pagination, Data Export & Clean Architecture
+### ⚡ Production-Ready Python Scraper (Sync + Async) with Pagination, Concurrency & Data Export
 
 ---
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.x-blue?logo=python">
-  <img src="https://img.shields.io/badge/Requests-HTTP-green">
+  <img src="https://img.shields.io/badge/Requests-Sync%20HTTP-green">
+  <img src="https://img.shields.io/badge/Aiohttp-Async%20HTTP-blueviolet">
   <img src="https://img.shields.io/badge/BeautifulSoup-Parsing-orange">
   <img src="https://img.shields.io/badge/Pandas-Data%20Processing-purple">
-  <img src="https://img.shields.io/badge/Status-Completed-success">
+  <img src="https://img.shields.io/badge/Status-Production--Ready-success">
 </p>
 
 ---
 
 ## 🚀 Overview
 
-A **robust, scalable web scraper** built with Python that extracts product data from a real-world eCommerce demo site.
+A **robust, scalable web scraping project** built with Python that extracts product data from a real-world eCommerce demo site.
 
-✔ Handles **pagination automatically**
-✔ Extracts **complete product metadata**
-✔ Implements **polite scraping practices**
-✔ Exports clean data into **CSV format**
+This repository demonstrates **two approaches**:
 
-> 💡 Designed as a **portfolio-grade project** demonstrating real-world scraping skills.
+* 🧵 **Synchronous Scraping (requests)** — simple, readable, beginner-friendly
+* ⚡ **Asynchronous Scraping (aiohttp + asyncio)** — fast, concurrent, production-grade <br>
+
+✔ Handles **pagination automatically** <br>
+✔ Extracts **complete product metadata** <br>
+✔ Implements **polite scraping practices** <br>
+✔ Exports clean data into **CSV format** <br>
 
 ---
 
@@ -33,12 +37,19 @@ A **robust, scalable web scraper** built with Python that extracts product data 
 
 ✨ What makes this project stand out:
 
+### Core Features
+
 * 🔄 **Automatic Pagination Detection**
-* 🌐 **Session-Based Requests (Faster & Efficient)**
+* 🌐 **Session-Based Requests**
 * 🧠 **Fault-Tolerant Data Extraction**
-* ⏱️ **Random Delays (Anti-blocking)**
 * 📦 **Structured Data Storage**
 * 📊 **CSV Export via pandas**
+
+### Advanced Features
+
+* ⚡ **Async Scraping (Concurrency with asyncio)**
+* 🚀 **Parallel Page Fetching (Massive Speed Boost)**
+* ⏱️ **Polite Scraping (Delays & Headers)**
 * 🔗 Extracts:
 
   * Product Title
@@ -48,17 +59,37 @@ A **robust, scalable web scraper** built with Python that extracts product data 
 
 ---
 
-## 🧠 How It Works
+## 🧠 Architecture Overview
+
+### 🧵 Synchronous Flow
 
 ```text
-Initialize Session → Fetch First Page → Detect Total Pages
-        ↓
-Loop Through Pages → Extract Product Data
-        ↓
-Apply Delay → Store Data → Convert to DataFrame
-        ↓
-Export to CSV
+Initialize Session → Fetch Page → Parse → Repeat → Save CSV
 ```
+
+### ⚡ Asynchronous Flow
+
+```text
+Fetch First Page → Detect Total Pages
+        ↓
+Create Async Tasks (All Pages)
+        ↓
+Execute Concurrent Requests (asyncio.gather)
+        ↓
+Parse HTML → Store Data → Export CSV
+```
+
+---
+
+## ⚡ Sync vs Async Comparison
+
+| Feature     | Sync (requests) 🧵 | Async (aiohttp) ⚡    |
+| ----------- | ------------------ | -------------------- |
+| Execution   | Sequential         | Concurrent           |
+| Speed       | Slower             | Much Faster 🚀       |
+| Complexity  | Easy               | Intermediate         |
+| Scalability | Limited            | High                 |
+| Use Case    | Small projects     | Large-scale scraping |
 
 ---
 
@@ -67,7 +98,8 @@ Export to CSV
 | Category      | Tools Used          |
 | ------------- | ------------------- |
 | Language      | Python 🐍           |
-| HTTP Client   | requests            |
+| Sync HTTP     | requests            |
+| Async HTTP    | aiohttp + asyncio   |
 | Parsing       | BeautifulSoup (bs4) |
 | Parser Engine | lxml                |
 | Data Handling | pandas              |
@@ -79,9 +111,11 @@ Export to CSV
 ```
 scrapeme-scraper/
 │
-├── scraper.py            # Core scraping logic
-├── products_info.csv     # Generated dataset
-└── README.md             # Documentation
+├── scraper.py              # Sync version (requests)
+├── scraper_async.py        # Async version (aiohttp)
+├── products_info.csv       # Output (sync)
+├── products_info_async.csv # Output (async)
+└── README.md               # Documentation
 ```
 
 ---
@@ -98,12 +132,14 @@ cd scrapeme-scraper
 ### 2. Install Dependencies
 
 ```bash
-pip install requests beautifulsoup4 lxml pandas
+pip install requests aiohttp beautifulsoup4 lxml pandas
 ```
 
 ---
 
 ## ▶️ Usage
+
+### 🧵 Run Sync Version
 
 ```bash
 python scraper.py
@@ -111,17 +147,22 @@ python scraper.py
 
 ---
 
+### ⚡ Run Async Version
+
+```bash
+python scraper_async.py
+```
+
+---
+
 ## 📊 Sample Output
 
-### 🖥️ Console
+### 🖥️ Console (Async Example)
 
 ```
-Response Status Code: 200
-Max page number: 48
-
-Scraping page 1...
-Title: Bulbasaur, Price: £63
-
+Fetched: page 1
+Fetched: page 2
+Fetched: page 3
 ...
 
 Total products scraped: 755
@@ -145,8 +186,8 @@ CSV saved successfully!
 
 * ✔ Handles **network failures**
 * ✔ Prevents crashes from **missing HTML elements**
-* ✔ Uses `try-except` for safe execution
-* ✔ Continues scraping even if a page fails
+* ✔ Uses safe parsing patterns
+* ✔ Async version handles **partial failures gracefully**
 
 ---
 
@@ -154,7 +195,7 @@ CSV saved successfully!
 
 This project follows best practices:
 
-* ⏳ Uses **random delays (0.5–2s)**
+* ⏳ Uses **delays / controlled concurrency**
 * 🤝 Avoids aggressive request patterns
 * 📜 Built for **educational purposes**
 
@@ -164,8 +205,7 @@ This project follows best practices:
 
 ## 🔮 Future Enhancements
 
-* 🚀 Async scraping (aiohttp / concurrency)
-* 🔁 Retry & exponential backoff
+* 🔁 Retry logic + exponential backoff
 * 🌍 Proxy / IP rotation
 * 📦 Export to JSON / Database
 * 🧾 Logging system (production-grade)
@@ -178,7 +218,8 @@ This project follows best practices:
 
 **Mohammad Mustak Absar Khan**
 
-🔗 GitHub: [https://github.com/MustakAbsarKhan](https://github.com/MustakAbsarKhan)
+🔗 GitHub:
+[https://github.com/MustakAbsarKhan](https://github.com/MustakAbsarKhan)
 
 ---
 

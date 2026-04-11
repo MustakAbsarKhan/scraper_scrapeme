@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup as bs4
 import pandas as pd
 import random
 
+# main URL of the site to scrape
 baseURL = "https://scrapeme.live/shop/"
 
 # Fetch HTML (Async)
